@@ -3,159 +3,257 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AI运营助手 · Demo</title>
+<title>运营辅助 Agent · Demo</title>
 <style>
-  :root{
-    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --border:#2a2f3a;
-    --text:#e8eaed; --muted:#8b93a3; --blue:#4d8dff; --green:#3ecf8e;
-    --orange:#f5a623; --radius:14px;
+  :root {
+    --bg: #f5f5f5;
+    --surface: #fff;
+    --border: #e5e5e5;
+    --ink: #1a1a1a;
+    --muted: #888;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --red: #dc2626;
+    --font: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-    background:var(--bg); color:var(--text); font-size:14px;}
-  .app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--panel);}
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { font-family: var(--font); background: var(--bg); color: var(--ink); font-size: 14px; }
 
-  /* Header */
-  .topbar{padding:14px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--panel); z-index:10;}
-  .topbar h1{font-size:15px; margin:0 0 2px; font-weight:600;}
-  .topbar .sub{font-size:11px; color:var(--muted);}
-  .badge{display:inline-block; font-size:10px; padding:2px 7px; border-radius:20px; background:#2a2f3a; color:var(--orange); margin-left:6px; vertical-align:middle;}
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--surface);
+    display: flex; flex-direction: column; position: relative; }
 
-  /* Views */
-  .view{display:none; flex:1; flex-direction:column; overflow:hidden;}
-  .view.active{display:flex;}
+  /* ── 顶部品牌条 ── */
+  .brand-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; background: var(--surface);
+  }
+  .brand-header .logo { font-size: 18px; }
+  .brand-header h2 { font-size: 14px; font-weight: 700; flex: 1; }
+  .demo-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: var(--amber-light); color: var(--amber); font-weight: 700; }
 
-  /* Company list view */
-  #companyListView{padding:12px;}
-  .search-box{background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px 12px;
-    display:flex; align-items:center; gap:8px; margin-bottom:12px;}
-  .search-box input{background:none; border:none; outline:none; color:var(--text); font-size:14px; flex:1;}
-  .search-box input::placeholder{color:var(--muted);}
-  .hint{font-size:11px; color:var(--muted); margin:0 2px 10px;}
-  .company-card{background:var(--panel2); border:1px solid var(--border); border-radius:var(--radius);
-    padding:13px 14px; margin-bottom:10px; cursor:pointer; transition:border-color .15s;}
-  .company-card:active{border-color:var(--blue);}
-  .company-card .name{font-size:14px; font-weight:600; margin-bottom:6px;}
-  .tag{display:inline-block; font-size:11px; padding:2px 8px; border-radius:20px; margin-right:5px; margin-top:4px;}
-  .tag.blue{background:rgba(77,141,255,.15); color:var(--blue);}
-  .tag.green{background:rgba(62,207,142,.15); color:var(--green);}
-  .tag.gray{background:rgba(139,147,163,.15); color:var(--muted);}
-  .company-card .desc{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.5;}
+  /* ── 视图切换 ── */
+  .view { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .view.active { display: flex; }
 
-  /* Chat view */
-  #chatView{position:relative;}
-  .chat-header{padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;}
-  .back-btn{background:var(--panel2); border:1px solid var(--border); color:var(--text); width:30px; height:30px;
-    border-radius:8px; font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-  .chat-header .info{flex:1; min-width:0;}
-  .chat-header .cname{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .chat-header .cmeta{font-size:11px; color:var(--muted); margin-top:2px;}
+  /* ── 企业列表页（对应桌面版侧边栏）── */
+  .search-box { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .search-box input {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 13px; outline: none; font-family: inherit;
+  }
+  .search-box input:focus { border-color: var(--blue); }
+  .list-hint { padding: 10px 16px 4px; font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+  .company-list { flex: 1; overflow-y: auto; }
+  .company-item {
+    padding: 13px 16px; border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .company-item:active { background: var(--blue-light); }
+  .company-item .name { font-size: 13.5px; font-weight: 600; margin-bottom: 4px; }
+  .company-item .meta { font-size: 11px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .company-item .desc { font-size: 11.5px; color: var(--muted); margin-top: 5px; }
+  .list-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
 
-  .chat-area{flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px;}
-  .context-card{background:var(--panel2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 13px; font-size:12px; color:var(--muted); line-height:1.7; white-space:pre-line;}
-  .context-card b{color:var(--text);}
+  /* ── 主对话页 ── */
+  .topbar {
+    height: 50px; padding: 0 12px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
+  }
+  .back-btn { background: none; border: none; font-size: 18px; color: var(--ink); padding: 4px 6px; cursor: pointer; }
+  .topbar .title { font-weight: 600; font-size: 13.5px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .status { font-size: 11px; display: flex; align-items: center; gap: 5px; color: var(--muted); flex-shrink: 0; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
-  .bubble{max-width:88%; padding:10px 13px; border-radius:14px; font-size:13.5px; line-height:1.6; white-space:pre-line;}
-  .bubble.user{align-self:flex-end; background:var(--blue); color:#fff; border-bottom-right-radius:4px;}
-  .bubble.img{align-self:flex-end; background:var(--panel2); border:1px dashed var(--border); color:var(--muted); font-size:12px;}
+  .company-banner { padding: 12px 16px; background: var(--blue-light); border-bottom: 1px solid #bfdbfe; font-size: 12.5px; flex-shrink: 0; }
+  .company-banner .banner-name { font-weight: 700; font-size: 14px; }
+  .company-banner .banner-meta { color: #555; margin-top: 3px; }
+  .company-banner .banner-context { margin-top: 6px; font-size: 11.5px; color: #555; white-space: pre-line; max-height: 100px; overflow-y: auto; }
 
-  .card{background:var(--panel2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; align-self:stretch;}
-  .card h3{font-size:12px; margin:0 0 8px; color:var(--muted); font-weight:600; letter-spacing:.3px;}
-  .card .id-row{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;}
-  .card .intent{font-size:12.5px; color:var(--text); line-height:1.6;}
+  .chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .empty-state { text-align: center; color: var(--muted); margin-top: 60px; }
+  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
 
-  .speech-block{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
-  .speech-block .label{font-size:11px; color:var(--orange); font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:5px;}
-  .speech-block .content{font-size:13px; line-height:1.7; color:var(--text); white-space:pre-line;}
-  .copy-btn{margin-top:8px; background:none; border:1px solid var(--border); color:var(--muted); font-size:11px;
-    padding:5px 10px; border-radius:8px;}
-  .reason{font-size:11.5px; color:var(--muted); margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); line-height:1.6;}
+  .msg { max-width: 84%; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.6; white-space: pre-line; }
+  .msg.user { align-self: flex-end; background: var(--blue); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.system { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--muted); font-size: 12.5px; }
 
-  .thinking{align-self:flex-start; display:flex; align-items:center; gap:8px; padding:10px 13px; background:var(--panel2);
-    border-radius:14px; font-size:12px; color:var(--muted);}
-  .dot{width:5px; height:5px; border-radius:50%; background:var(--muted); animation:blink 1.2s infinite;}
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; font-size: 13.5px; line-height: 1.7; }
+  .card h3 { font-size: 14px; margin-bottom: 8px; }
+  .label-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tag { padding: 2px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 600; background: #f3f4f6; color: #555; }
+  .tag.green { background: var(--green-light); color: var(--green); }
+  .tag.blue { background: var(--blue-light); color: var(--blue); }
+  .tag.amber { background: var(--amber-light); color: var(--amber); }
+
+  .card .intent { font-size: 12.5px; color: #555; margin-bottom: 4px; }
+  .card .basis { font-size: 11.5px; color: var(--muted); }
+
+  .speech-label { font-size: 11.5px; font-weight: 700; color: var(--muted); margin: 10px 0 4px; }
+  .speech-block { background: #f9fafb; border-left: 3px solid var(--blue); padding: 10px 14px; border-radius: 0 8px 8px 0; white-space: pre-line; font-size: 13px; }
+  .speech-block.alt { border-left-color: #a5b4fc; }
+  .reason-block { font-size: 11.5px; color: var(--muted); margin-top: 8px; font-style: italic; }
+
+  .thinking { align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-size: 12px; color: var(--muted); }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
   .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
-  @keyframes blink{0%,80%,100%{opacity:.3;} 40%{opacity:1;}}
+  @keyframes blink{0%,80%,100%{opacity:.25;} 40%{opacity:1;}}
 
-  .save-toast{position:absolute; bottom:80px; left:50%; transform:translateX(-50%); background:var(--green); color:#08130d;
-    padding:8px 18px; border-radius:20px; font-size:12.5px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;}
-  .save-toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+  .quick-row { padding: 0 16px 8px; display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; }
+  .quick-chip { flex-shrink: 0; background: #f3f4f6; border: 1px solid var(--border); color: #555;
+    font-size: 11.5px; padding: 6px 12px; border-radius: 16px; white-space: nowrap; cursor: pointer; }
+  .quick-chip:active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
 
-  /* Quick replies */
-  .quick-row{padding:0 14px 6px; display:flex; gap:8px; overflow-x:auto;}
-  .quick-chip{flex-shrink:0; background:var(--panel2); border:1px solid var(--border); color:var(--muted);
-    font-size:11.5px; padding:6px 11px; border-radius:16px; white-space:nowrap;}
-  .quick-chip:active{border-color:var(--blue); color:var(--blue);}
+  .input-area { padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface);
+    display: flex; gap: 8px; flex-shrink: 0; align-items: flex-end; }
+  .input-area textarea { flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 13.5px; font-family: inherit; resize: none; outline: none; max-height: 84px; }
+  .input-area textarea:focus { border-color: var(--blue); }
 
-  /* Input bar */
-  .input-bar{padding:10px 12px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:flex-end;}
-  .input-bar textarea{flex:1; background:var(--panel2); border:1px solid var(--border); border-radius:12px; color:var(--text);
-    font-size:13.5px; padding:10px 12px; resize:none; outline:none; max-height:90px; font-family:inherit;}
-  .input-bar textarea::placeholder{color:var(--muted);}
-  .send-btn{background:var(--blue); border:none; color:#fff; width:38px; height:38px; border-radius:50%; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center; font-size:16px;}
-  .send-btn:disabled{opacity:.4;}
-  .save-btn{background:var(--green); border:none; color:#08130d; font-size:12px; font-weight:600; padding:8px 14px;
-    border-radius:10px; flex-shrink:0;}
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-outline { background: #fff; color: var(--ink); border: 1px solid var(--border); }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-sm { padding: 5px 11px; font-size: 11px; }
 
-  .footer-note{padding:10px 14px 16px; font-size:10.5px; color:var(--muted); text-align:center; line-height:1.6; border-top:1px solid var(--border);}
-  .footer-note a{color:var(--blue); text-decoration:none;}
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100;
+    justify-content: center; align-items: flex-end; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border-radius: 16px 16px 0 0; padding: 20px; width: 100%; max-width: 480px;
+    max-height: 82vh; overflow-y: auto; }
+  .modal h3 { margin-bottom: 14px; font-size: 15px; }
+  .modal label { font-size: 11.5px; font-weight: 600; display: block; margin: 10px 0 4px; color: #555; }
+  .modal input, .modal select { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 7px;
+    font-size: 13px; font-family: inherit; }
+  .modal .btn-row { margin-top: 18px; display: flex; gap: 8px; justify-content: flex-end; }
 
-  ::-webkit-scrollbar{width:0; height:0;}
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1f2937; color: #fff; padding: 9px 18px; border-radius: 8px; font-size: 12.5px;
+    z-index: 200; animation: fadeIn .25s; white-space: nowrap; }
+  @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  .footer-note { padding: 8px 16px 14px; font-size: 10px; color: var(--muted); text-align: center; line-height: 1.6; }
+  .footer-note a { color: var(--blue); text-decoration: none; }
+
+  ::-webkit-scrollbar { width: 0; height: 0; }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <div class="topbar">
-    <h1>AI运营助手 <span class="badge">DEMO</span></h1>
-    <div class="sub">企业识别 · 话术生成 · 跟进档案自动化（示例数据，非真实企业）</div>
+  <div class="brand-header">
+    <span class="logo">🤝</span>
+    <h2>运营辅助 Agent</h2>
+    <span class="demo-badge">DEMO</span>
   </div>
 
-  <!-- 企业列表页 -->
-  <div class="view active" id="companyListView">
+  <!-- ═══════════ 企业列表页（对应桌面版侧边栏） ═══════════ -->
+  <div class="view active" id="listView">
     <div class="search-box">
-      <span>🔍</span>
-      <input id="searchInput" placeholder="输入企业名搜索，或直接点下方卡片" oninput="filterCompanies()">
+      <input type="text" id="searchInput" placeholder="🔍 搜索企业..." oninput="filterCompanies()">
     </div>
-    <div class="hint">👇 点击任意企业，体验完整的"加载档案 → 粘贴消息 → AI生成话术 → 保存"流程</div>
-    <div id="companyList"></div>
+    <div class="list-hint">👇 点击任意企业，体验完整的"加载档案 → 粘贴消息 → AI识别+生成话术 → 保存"流程</div>
+    <div class="company-list" id="companyList"></div>
+    <div class="list-footer">
+      <button class="btn btn-outline btn-sm" onclick="showNewModal()">+ 新建企业</button>
+      <button class="btn btn-outline btn-sm" onclick="toast('演示数据已固定，刷新等于重置')">刷新</button>
+    </div>
   </div>
 
-  <!-- 对话页 -->
+  <!-- ═══════════ 对话主页 ═══════════ -->
   <div class="view" id="chatView">
-    <div class="chat-header">
+    <div class="topbar">
       <button class="back-btn" onclick="goBack()">←</button>
-      <div class="info">
-        <div class="cname" id="chatCName">—</div>
-        <div class="cmeta" id="chatCMeta">—</div>
+      <span class="title" id="topTitle">—</span>
+      <div class="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">就绪</span>
       </div>
+      <button class="btn btn-success btn-sm" onclick="toast('💾 请点击对话卡片里的「保存本次沟通」')">💾</button>
+      <button class="btn btn-outline btn-sm" onclick="showStatusModal()">📋</button>
     </div>
+
+    <div class="company-banner" id="companyBanner"></div>
 
     <div class="chat-area" id="chatArea"></div>
 
     <div class="quick-row" id="quickRow"></div>
 
-    <div class="input-bar">
-      <textarea id="msgInput" rows="1" placeholder="粘贴企业微信消息…" oninput="autoGrow(this)"></textarea>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+    <div class="input-area">
+      <textarea id="msgInput" rows="1" placeholder="粘贴企业微信消息..." oninput="autoGrow(this)"></textarea>
+      <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">发送</button>
     </div>
-
-    <div class="save-toast" id="saveToast">✓ 已保存并更新台账</div>
   </div>
 
   <div class="footer-note" id="footerNote"></div>
+</div>
+
+<!-- ═══════════ 新建企业 Modal ═══════════ -->
+<div class="modal-overlay" id="newModal">
+  <div class="modal">
+    <h3>🏢 新建企业</h3>
+    <label>企业名称 *</label>
+    <input type="text" id="newName">
+    <label>类型</label>
+    <select id="newType" onchange="toggleNewFields()">
+      <option value="待定">待定</option>
+      <option value="服务商">服务商</option>
+      <option value="需求方">需求方</option>
+    </select>
+    <div id="newIndustryBlock" style="display:none">
+      <label>行业分类</label>
+      <select id="newIndustry">
+        <option value="">--</option>
+        <option>AI软件/SaaS</option><option>智能硬件</option>
+        <option>算力/基础设施</option><option>解决方案集成商</option><option>其他</option>
+      </select>
+    </div>
+    <div id="newDemandBlock" style="display:none">
+      <label>需求类型</label>
+      <select id="newDemand">
+        <option value="">--</option>
+        <option>AI质检/视觉检测</option><option>智能客服/问答</option>
+        <option>营销获客/内容生成</option><option>算力租用/模型训练</option>
+        <option>数据分析/智能报表</option><option>办公提效</option><option>其他</option>
+      </select>
+    </div>
+    <label>联系人</label>
+    <input type="text" id="newContact">
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="hideNewModal()">取消</button>
+      <button class="btn btn-primary" onclick="createNewCompany()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 更新阶段 Modal ═══════════ -->
+<div class="modal-overlay" id="statusModal">
+  <div class="modal">
+    <h3>📋 更新阶段</h3>
+    <select id="statusSelect">
+      <option>已联系</option><option>已回复</option><option>深入沟通中</option>
+      <option>约见中</option><option>已答应上架</option><option>已上架</option>
+      <option>已注册</option><option>暂缓</option><option>无回应</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="hideStatusModal()">取消</button>
+      <button class="btn btn-primary" onclick="updateStatus()">确认</button>
+    </div>
+  </div>
 </div>
 
 <script>
 /* ============================================================
    演示数据：全部为虚构企业/虚构平台名称，不含任何真实内部信息。
    本 demo 不调用任何真实 AI 接口，话术为预设脚本，用于展示交互流程。
+   视觉风格与真实本地版本（Python + SQLite + DeepSeek）保持一致。
    ============================================================ */
 
-const PLATFORM_NAME = "星城产业AI服务平台";
-
-const COMPANIES = [
+let COMPANIES = [
   {
     id: 1,
     name: "极光视觉科技有限公司",
@@ -164,8 +262,7 @@ const COMPANIES = [
     industry: "AI软件/SaaS（智能质检）",
     status: "深入沟通中",
     contact: "陈总",
-    isLocal: true,
-    isB2B: true,
+    isLocal: true, isB2B: true,
     history: [
       { date: "06-24", text: "初步介绍平台，对方表示有兴趣了解上架流程" },
       { date: "06-27", text: "陈总表示产品资料在整理中，本周内发送" },
@@ -178,21 +275,21 @@ const COMPANIES = [
     responses: {
       "materials": {
         intent: "主动询问上架所需材料，意愿强烈，处于决策临门一脚阶段",
-        basis: ["历史沟通中已承诺发资料", "本次消息主动提出具体流程问题"],
+        basis: "历史沟通中已承诺发资料；本次消息主动提出具体流程问题",
         main: "陈总您好！很高兴您整理好了～上架需要提交：产品名称和简介、应用场景说明、产品截图或演示材料、营业执照。我这边可以帮您对照检查，资料发我之后，我协助整理成上架格式，尽快帮您完成入驻～",
         alt: "陈总您好！材料主要是：产品介绍+场景说明+截图+营业执照，我发您一份模板，您照着填就行，我帮您跟进后续审核进度。",
         reason: "对方主动询问流程，意愿已经很强，此时不需要再介绍平台价值，直接给清单+主动提出帮整理，最大程度降低对方操作门槛，加快推进上架。"
       },
       "timeline": {
         intent: "关心审核周期，处于评估决策阶段",
-        basis: ["询问时间周期，说明对上架有实际打算，但仍有顾虑"],
+        basis: "询问时间周期，说明对上架有实际打算，但仍有顾虑",
         main: "一般资料齐全的话，1-2个工作日就能完成初审～我这边全程帮您跟进，有问题第一时间同步您，不会让您干等着。",
         alt: "审核流程不复杂，材料齐全基本当周就能过，您方便的话可以先把资料发我，我先帮您预检一遍，减少来回修改的时间。",
         reason: "直接给出明确时间预期，消除对方对流程不透明的顾虑，同时用'预检'进一步降低对方的心理门槛。"
       },
       "default": {
         intent: "服务商延续沟通，具体意图需结合上下文判断",
-        basis: ["消息未命中预设关键词，实际系统会调用大模型做语义识别"],
+        basis: "消息未命中预设关键词，实际系统会调用大模型做语义识别",
         main: "陈总您好，收到～这边正在跟进您的上架事项，有任何资料或问题随时发我，我这边会第一时间处理～",
         alt: "了解～这边同步记录一下，方便的话可以说得更具体一些，我好针对性地帮您安排。",
         reason: "演示环境下未命中预设话术模板，真实系统会由大模型结合企业档案与消息内容动态生成回复。"
@@ -204,12 +301,10 @@ const COMPANIES = [
     name: "远景智造装备有限公司",
     alias: "远景智造",
     type: "需求方",
-    industry: "",
     demand: "AI质检/视觉检测",
     status: "已回复",
     contact: "周经理",
-    isLocal: true,
-    isB2B: true,
+    isLocal: true, isB2B: true,
     history: [
       { date: "06-25", text: "初步对接，了解到产线有质检需求，想找AI视觉检测方案" },
     ],
@@ -221,21 +316,21 @@ const COMPANIES = [
     responses: {
       "quality": {
         intent: "明确表达质检痛点，处于方案需求探索阶段",
-        basis: ["提到具体场景（产线质检）和痛点（漏检率高）"],
+        basis: "提到具体场景（产线质检）和痛点（漏检率高）",
         main: "周经理您好！这个场景我们平台有现成的AI视觉质检方案，专门解决人工漏检、疲劳误判这些问题，而且租用平台算力政府还有补贴，能帮您把成本降下来。方便的话我把匹配的服务商案例发您看看？",
         alt: "了解～漏检率高确实是制造业的通病，AI视觉检测这块平台上有几家做得不错的服务商，我可以先帮您整理一份对比资料，您看看哪家更贴合你们产线的实际情况。",
         reason: "对方已经给出具体痛点，说明需求真实存在，此时应该直接给方案+算力补贴钩子，降低决策门槛，推进到匹配服务商这一步。"
       },
       "subsidy": {
         intent: "对补贴政策感兴趣，说明成本是决策关键因素",
-        basis: ["主动询问补贴申请方式，处于价格敏感的评估阶段"],
+        basis: "主动询问补贴申请方式，处于价格敏感的评估阶段",
         main: "这块您放心，企业通过平台租用算力，可以申请补贴，能帮您把使用成本明显降下来。具体申请流程不复杂，我这边可以全程协助您对接，您先确认下方案，补贴的事交给我来跟。",
         alt: "补贴申请这块您不用操心，我们平台有专门的对接流程，您只需要把基础资料准备好，剩下的我来帮您跑手续。",
         reason: "补贴是需求方最关心的成本问题，直接给出确定性承诺（'我来跟'）能有效打消对方对流程复杂度的顾虑，推进注册对接。"
       },
       "default": {
         intent: "需求方延续沟通，具体意图需结合上下文判断",
-        basis: ["消息未命中预设关键词，实际系统会调用大模型做语义识别"],
+        basis: "消息未命中预设关键词，实际系统会调用大模型做语义识别",
         main: "周经理您好，收到～这边同步记录一下您的情况，方便的话可以说得更具体一些，比如是想解决产线的哪个环节，我好精准帮您匹配方案～",
         alt: "了解，我这边先记录下来，后续有合适的方案第一时间同步您。",
         reason: "演示环境下未命中预设话术模板，真实系统会由大模型结合企业档案与消息内容动态生成回复。"
@@ -250,8 +345,7 @@ const COMPANIES = [
     industry: "算力/基础设施",
     status: "已上架",
     contact: "李经理",
-    isLocal: true,
-    isB2B: true,
+    isLocal: true, isB2B: true,
     history: [
       { date: "06-10", text: "介绍平台算力补贴政策，对方非常感兴趣" },
       { date: "06-18", text: "账号注册完成，产品已上架，帮对接了2家需求方" },
@@ -265,14 +359,14 @@ const COMPANIES = [
     responses: {
       "event": {
         intent: "主动询问线下活动信息，合作意愿持续、关系良好",
-        basis: ["已上架且有过成功对接案例", "主动要求参加线下活动，说明认可平台价值"],
+        basis: "已上架且有过成功对接案例；主动要求参加线下活动，说明认可平台价值",
         main: "李经理您好！下期活动时间确定后我第一时间通知您，肯定给您留位置～您这边合作反馈一直很好，正好也可以在活动上多曝光一下产品。",
         alt: "好的，活动信息出来我马上同步您，到时候也可以带上最新的案例资料，现场对接效率会更高。",
         reason: "对方是已上架的优质合作方，维护长期关系比单次对接更重要，语气可以更轻松、更像伙伴而非单纯的运营对接。"
       },
       "default": {
         intent: "服务商延续沟通，具体意图需结合上下文判断",
-        basis: ["消息未命中预设关键词，实际系统会调用大模型做语义识别"],
+        basis: "消息未命中预设关键词，实际系统会调用大模型做语义识别",
         main: "李经理您好，收到～这边持续帮您关注合适的需求方，有新进展随时同步您。",
         alt: "了解，我这边记录一下，后续有相关资源第一时间对接给您。",
         reason: "演示环境下未命中预设话术模板，真实系统会由大模型结合企业档案与消息内容动态生成回复。"
@@ -282,21 +376,22 @@ const COMPANIES = [
 ];
 
 let currentCompany = null;
+let nextId = 100;
 
 function renderCompanyList(filter=''){
   const el = document.getElementById('companyList');
-  const list = COMPANIES.filter(c => !filter || c.name.includes(filter) || c.alias.includes(filter));
+  const list = COMPANIES.filter(c => !filter || c.name.includes(filter) || (c.alias||'').includes(filter));
   if(list.length === 0){
-    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:30px 0">无匹配企业</div>';
+    el.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:12px">无匹配企业</div>';
     return;
   }
   el.innerHTML = list.map(c => `
-    <div class="company-card" onclick="openCompany(${c.id})">
+    <div class="company-item" onclick="openCompany(${c.id})">
       <div class="name">${c.name}</div>
-      <div>
-        <span class="tag ${c.type==='服务商'?'blue':'green'}">${c.type}</span>
-        <span class="tag gray">${c.industry || c.demand}</span>
-        <span class="tag gray">${c.status}</span>
+      <div class="meta">
+        <span>${c.type}</span>
+        <span>| ${c.industry || c.demand || ''}</span>
+        <span style="color:var(--blue)">${c.status}</span>
       </div>
       <div class="desc">最近：${c.history[c.history.length-1].text}</div>
     </div>
@@ -309,40 +404,47 @@ function filterCompanies(){
 
 function openCompany(id){
   currentCompany = COMPANIES.find(c => c.id === id);
-  document.getElementById('companyListView').classList.remove('active');
+  document.getElementById('listView').classList.remove('active');
   document.getElementById('chatView').classList.add('active');
-  document.getElementById('chatCName').textContent = currentCompany.name;
-  document.getElementById('chatCMeta').textContent =
-    `${currentCompany.type} · ${currentCompany.industry || currentCompany.demand} · ${currentCompany.status}`;
+  document.getElementById('topTitle').textContent = currentCompany.name;
+  setStatus('就绪', 'var(--green)');
+
+  const banner = document.getElementById('companyBanner');
+  const indOrDem = currentCompany.type === '服务商' ? currentCompany.industry : (currentCompany.type === '需求方' ? currentCompany.demand : '');
+  const histLines = currentCompany.history.map(h => `- ${h.date}：${h.text}`).join('\n');
+  banner.innerHTML = `
+    <div class="banner-name">🏢 ${currentCompany.name}</div>
+    <div class="banner-meta">
+      类型：${currentCompany.type}${indOrDem ? ' | ' + indOrDem : ''}
+      | 阶段：${currentCompany.status}
+      | 联系人：${currentCompany.contact || '无'}
+      | 本地企业：${currentCompany.isLocal ? '是' : '否'}
+    </div>
+    <div class="banner-context">最近沟通：\n${histLines}\n下一步：${currentCompany.nextAction}</div>
+  `;
 
   const area = document.getElementById('chatArea');
-  const histLines = currentCompany.history.map(h => `  · ${h.date}：${h.text}`).join('\n');
   area.innerHTML = `
-    <div class="context-card">
-<b>【已加载企业档案】</b>
-企业：${currentCompany.name}
-类型：${currentCompany.type} | ${currentCompany.industry || currentCompany.demand}
-状态：${currentCompany.status} | 联系人：${currentCompany.contact}
-本地企业：${currentCompany.isLocal ? '是' : '否'} | B2B：${currentCompany.isB2B ? '是' : '否'}
-最近沟通：
-${histLines}
-下一步：${currentCompany.nextAction}
+    <div class="empty-state">
+      <div class="icon">💬</div>
+      <div>粘贴微信消息或点下方快捷示例开始分析</div>
     </div>
   `;
 
   const qrow = document.getElementById('quickRow');
-  qrow.innerHTML = currentCompany.quickMsgs.map(m =>
+  qrow.innerHTML = (currentCompany.quickMsgs || []).map(m =>
     `<div class="quick-chip" onclick="fillMsg('${m.replace(/'/g,"\\'")}')">${m.length>16 ? m.slice(0,16)+'…' : m}</div>`
   ).join('');
 
   document.getElementById('msgInput').value = '';
   document.getElementById('footerNote').innerHTML =
-    `本页面全部数据为演示用虚构内容，不接入任何真实企业信息或线上 AI 接口。<br>完整版本地部署架构：<a href="#" onclick="return false">GitHub 项目说明 →</a>`;
+    `本页面全部数据为演示用虚构内容，不接入任何真实企业信息或线上 AI 接口<br><a href="https://github.com/benben302/ops-agent-demo" target="_blank">GitHub 项目说明 →</a>`;
 }
 
 function goBack(){
   document.getElementById('chatView').classList.remove('active');
-  document.getElementById('companyListView').classList.add('active');
+  document.getElementById('listView').classList.add('active');
+  renderCompanyList(document.getElementById('searchInput').value.trim());
 }
 
 function fillMsg(text){
@@ -353,20 +455,19 @@ function fillMsg(text){
 
 function autoGrow(el){
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+  el.style.height = Math.min(el.scrollHeight, 84) + 'px';
 }
 
 function pickResponseKey(message){
-  const m = message.toLowerCase();
-  if(currentCompany.id === 1){
+  if(currentCompany.responses['materials'] !== undefined){
     if(/材料|资料|上架|提交/.test(message)) return 'materials';
     if(/多久|时间|周期|审核/.test(message)) return 'timeline';
   }
-  if(currentCompany.id === 2){
+  if(currentCompany.responses['quality'] !== undefined){
     if(/质检|漏检|检测|视觉|产线/.test(message)) return 'quality';
     if(/补贴|申请|多少钱|成本/.test(message)) return 'subsidy';
   }
-  if(currentCompany.id === 3){
+  if(currentCompany.responses['event'] !== undefined){
     if(/活动|对接会|报名/.test(message)) return 'event';
   }
   return 'default';
@@ -375,19 +476,23 @@ function pickResponseKey(message){
 async function sendMessage(){
   const input = document.getElementById('msgInput');
   const message = input.value.trim();
-  if(!message) return;
+  if(!message || !currentCompany) return;
 
   const area = document.getElementById('chatArea');
+  const emptyState = area.querySelector('.empty-state');
+  if(emptyState) emptyState.remove();
+
   const sendBtn = document.getElementById('sendBtn');
   sendBtn.disabled = true;
 
   const userBubble = document.createElement('div');
-  userBubble.className = 'bubble user';
+  userBubble.className = 'msg user';
   userBubble.textContent = message;
   area.appendChild(userBubble);
   input.value = '';
   autoGrow(input);
   area.scrollTop = area.scrollHeight;
+  setStatus('分析中...', 'var(--amber)');
 
   const thinking = document.createElement('div');
   thinking.className = 'thinking';
@@ -405,38 +510,112 @@ async function sendMessage(){
   card.className = 'card';
   card.innerHTML = `
     <h3>🔍 企业识别</h3>
-    <div class="id-row">
+    <div class="label-row">
       <span class="tag blue">${currentCompany.type}</span>
-      <span class="tag green">${currentCompany.industry || currentCompany.demand}</span>
+      <span class="tag green">${currentCompany.industry || currentCompany.demand || ''}</span>
     </div>
-    <div class="intent">${r.intent}<br><span style="color:var(--muted);font-size:11.5px">依据：${r.basis.join('；')}</span></div>
+    <div class="intent">${r.intent}</div>
+    <div class="basis">识别依据：${r.basis}</div>
 
-    <div class="speech-block">
-      <div class="label">💬 主推话术</div>
-      <div class="content">${r.main}</div>
+    <div class="speech-label">💬 主推话术</div>
+    <div class="speech-block">${r.main}</div>
+
+    <div class="speech-label" style="color:var(--blue)">💬 备选话术</div>
+    <div class="speech-block alt">${r.alt}</div>
+
+    <div class="reason-block">建议理由：${r.reason}</div>
+    <div style="margin-top:10px">
+      <button class="btn btn-success btn-sm" onclick="saveConversation('${key}', this)">💾 保存本次沟通</button>
     </div>
-    <div class="speech-block">
-      <div class="label" style="color:var(--blue)">💬 备选话术</div>
-      <div class="content">${r.alt}</div>
-    </div>
-    <div class="reason">建议理由：${r.reason}</div>
-    <button class="copy-btn" onclick="saveConversation('${key}')">✓ 保存本次沟通</button>
   `;
   area.appendChild(card);
   area.scrollTop = area.scrollHeight;
   sendBtn.disabled = false;
+  setStatus('就绪', 'var(--green)');
 }
 
-function saveConversation(key){
+function saveConversation(key, btnEl){
   const r = currentCompany.responses[key];
   const today = new Date();
   const dateStr = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
   currentCompany.history.push({ date: dateStr, text: r.intent });
   currentCompany.nextAction = "跟进对方后续回复，视情况推进下一步";
 
-  const toast = document.getElementById('saveToast');
-  toast.classList.add('show');
-  setTimeout(()=> toast.classList.remove('show'), 1800);
+  const area = document.getElementById('chatArea');
+  const sysMsg = document.createElement('div');
+  sysMsg.className = 'msg system';
+  sysMsg.textContent = `✅ 已保存！要点：${r.intent}\n下一步：${currentCompany.nextAction}\n📊 台账已更新`;
+  area.appendChild(sysMsg);
+  area.scrollTop = area.scrollHeight;
+
+  if(btnEl){ btnEl.disabled = true; btnEl.textContent = '✓ 已保存'; }
+  toast('✅ 已保存并更新台账');
+}
+
+function showNewModal(){ document.getElementById('newModal').classList.add('show'); toggleNewFields(); }
+function hideNewModal(){ document.getElementById('newModal').classList.remove('show'); }
+function toggleNewFields(){
+  const type = document.getElementById('newType').value;
+  document.getElementById('newIndustryBlock').style.display = type === '服务商' ? 'block' : 'none';
+  document.getElementById('newDemandBlock').style.display = type === '需求方' ? 'block' : 'none';
+}
+function createNewCompany(){
+  const name = document.getElementById('newName').value.trim();
+  if(!name){ toast('请输入企业名称'); return; }
+  const type = document.getElementById('newType').value;
+  const c = {
+    id: nextId++,
+    name, alias: name,
+    type,
+    industry: document.getElementById('newIndustry').value,
+    demand: document.getElementById('newDemand').value,
+    status: '已联系',
+    contact: document.getElementById('newContact').value.trim(),
+    isLocal: true, isB2B: true,
+    history: [{ date: '今天', text: '新建档案，等待首次沟通' }],
+    nextAction: '首次联系，了解基本情况',
+    quickMsgs: [],
+    responses: { default: {
+      intent: '新建企业，暂无历史沟通记录', basis: '首次建档',
+      main: `${document.getElementById('newContact').value.trim() || '您好'}，很高兴认识您～想简单了解下贵司情况，方便帮您匹配合适的资源~`,
+      alt: '您好，想请教下贵司目前主要的业务方向，看看有没有能帮上忙的地方。',
+      reason: '首次接触，先建立联系、了解基本情况，不着急推进具体动作。'
+    }}
+  };
+  COMPANIES.unshift(c);
+  hideNewModal();
+  toast('✅ 企业已创建');
+  document.getElementById('newName').value = '';
+  document.getElementById('newContact').value = '';
+  openCompany(c.id);
+}
+
+function showStatusModal(){
+  if(!currentCompany) return;
+  document.getElementById('statusSelect').value = currentCompany.status || '已联系';
+  document.getElementById('statusModal').classList.add('show');
+}
+function hideStatusModal(){ document.getElementById('statusModal').classList.remove('show'); }
+function updateStatus(){
+  if(!currentCompany) return;
+  const newStatus = document.getElementById('statusSelect').value;
+  currentCompany.status = newStatus;
+  hideStatusModal();
+  openCompany(currentCompany.id);
+  toast('✅ 阶段已更新为：' + newStatus);
+}
+
+function setStatus(text, color){
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').style.background = color;
+}
+
+function toast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=> el.remove(), 2200);
 }
 
 function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
